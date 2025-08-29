@@ -1,0 +1,76 @@
+:root{
+      --bg-1:#0a0a0a;         /* deep black */
+      --bg-2:#101214;         /* charcoal */
+      --bg-3:#171a1d;         /* slate */
+      --gold-1:#f5d97d;       /* soft gold */
+      --gold-2:#ffd75a;       /* bright gold */
+      --gold-3:#caa64a;       /* rich gold */
+      --text-1:#f8f8f8;
+      --text-2:#c7c9cc;
+      --success:#1fbf75;
+      --danger:#ef4444;
+      --shadow: 0 10px 30px rgba(0,0,0,.45);
+      --radius: 20px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      color:var(--text-1); background: radial-gradient(1200px 800px at 80% -10%, rgba(255,215,90,.08), transparent),
+                 radial-gradient(1000px 600px at -10% 110%, rgba(202,166,74,.10), transparent),
+                 linear-gradient(135deg, var(--bg-1), var(--bg-2));
+      display:flex; align-items:center; justify-content:center; padding:28px;
+    }
+    .wrap{width:min(1200px,100%);}
+    .brand{ text-align:center; margin-bottom:28px;}
+    .brand h1{
+      font-size:clamp(36px,5vw,56px); margin:0 0 8px; font-weight:800; letter-spacing:.5px;
+      background:linear-gradient(90deg,var(--gold-2),var(--gold-1),var(--gold-3));
+      -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 6px 20px rgba(255,215,90,.15));
+    }
+    .brand p{margin:0;color:var(--text-2)}
+
+    .card{background:linear-gradient(160deg, rgba(255,215,90,.06), transparent 35%), var(--bg-3);
+      border:1px solid rgba(255,215,90,.18); border-radius:var(--radius); box-shadow:var(--shadow);
+    }
+    .landing{ padding:28px; display:grid; gap:22px; place-items:center; }
+    .cta{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center}
+    .btn{
+      --bg:linear-gradient(90deg,var(--gold-2),var(--gold-1));
+      border:none; border-radius:16px; padding:14px 22px; font-weight:700; letter-spacing:.3px; cursor:pointer;
+      background:var(--bg); color:#121212; box-shadow:0 10px 24px rgba(255,215,90,.25); transition:transform .15s ease, filter .2s ease, box-shadow .2s ease;
+    }
+    .btn:hover{ transform:translateY(-2px); filter:saturate(1.05); box-shadow:0 14px 30px rgba(255,215,90,.35)}
+    .btn.secondary{ --bg: linear-gradient(90deg,#2b2f33,#1d2125); color:var(--text-1); border:1px solid rgba(255,215,90,.14); box-shadow:none }
+    .btn.round{ border-radius:999px }
+
+    .features{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; width:100%}
+    .feature{ padding:18px; border-radius:16px; border:1px dashed rgba(255,215,90,.15); background:rgba(255,215,90,.04) }
+    .feature h4{ margin:0 0 6px }
+    .feature p{ margin:0; color:var(--text-2); font-size:14px }
+
+    .grid{ display:grid; gap:18px }
+    .chat-grid{ grid-template-columns:1fr; }
+    @media(min-width:900px){ .chat-grid{ grid-template-columns:1fr 1fr } }
+
+    .panel{ height:360px; border-radius:var(--radius); border:1px solid rgba(255,215,90,.18); background:linear-gradient(160deg, rgba(255,215,90,.06), transparent 45%), #0e1113; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden }
+    .panel .placeholder{ color:#9aa0a6; font-weight:600; letter-spacing:.4px }
+    .panel:before{ content:""; position:absolute; inset:-2px; background: radial-gradient(600px 200px at 50% -20%, rgba(255,215,90,.08), transparent);
+      pointer-events:none; }
+
+    .chatbox{ height:180px; border-radius:var(--radius); border:1px solid rgba(255,215,90,.18); background:#0b0d0f; padding:14px; overflow:auto }
+    .msg{ margin:0 0 8px; font-size:14px }
+    .msg.me{ color:var(--gold-1) }
+    .msg.them{ color:#cbd5e1 }
+
+    .controls{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center }
+    .icon{ width:18px; height:18px; vertical-align:-3px; margin-right:8px }
+
+    .topbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding:16px 18px; border-bottom:1px solid rgba(255,215,90,.12) }
+    .pill{ padding:8px 12px; border-radius:999px; background:rgba(255,215,90,.10); border:1px solid rgba(255,215,90,.22); color:var(--gold-1); font-weight:600; font-size:12px; letter-spacing:.3px }
+
+    .hidden{ display:none }
+    .row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap }
+    select, input[type="text"]{
+      background:#0e1215; border:1px solid rgba(255,215,90,.18); color:var(--text-1); padding:10px 12px; border-radius:12px; outline:none
+    }

@@ -1,0 +1,13 @@
+{
+  "name": "chatverse-full",
+  "version": "1.0.0",
+  "description": "ChatVerse UI (user-provided) + full text+video stranger chat (Socket.IO + WebRTC)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.1"
+  }
+}

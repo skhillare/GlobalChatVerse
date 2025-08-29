@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ChatVerse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <h1>ChatVerse</h1>
+      <p></p>
+    </div>
+
+    <!-- Landing Card -->
+    <section id="landing" class="card landing" aria-labelledby="landing-title">
+      <h2 id="landing-title" style="margin:0;font-size:22px;font-weight:700">Meet someone new in seconds</h2>
+      <p style="margin:0;color:var(--text-2);text-align:center;max-width:70ch">Click start to get paired instantly. Your camera/mic permissions will be requested when you enter the chat. Theme tuned for a premium, glamorous feel.</p>
+
+      <div class="cta">
+        <button class="btn" id="startBtn">▶ Start Chatting</button>
+        <button class="btn secondary" id="learnBtn">How it works</button>
+      </div>
+
+      <div class="features">
+        <div class="feature"><h4>⚡ Instant Match</h4><p>Skip the wait and jump right in.</p></div>
+        <div class="feature"><h4>🎭 Private & Secure</h4><p>No sign-up needed (optional login later).</p></div>
+        <div class="feature"><h4>🌍 Global Filters</h4><p>Pick country; gender filter optional.</p></div>
+        <div class="feature"><h4>🛡️ Safety Tools</h4><p>Report, block and smart moderation.</p></div>
+      </div>
+    </section>
+
+    <!-- Chat UI -->
+    <section id="chat" class="card hidden" aria-live="polite">
+      <div class="topbar">
+        <div class="row">
+          <span class="pill">LIVE</span>
+          <div class="row">
+            <label for="country">Country</label>
+            <select id="country" aria-label="Country filter">
+              <option value="any">Any</option>
+              <option value="IN">India</option>
+              <option value="US">United States</option>
+              <option value="GB">United Kingdom</option>
+              <option value="CA">Canada</option>
+              <option value="AU">Australia</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+              <option value="IT">Italy</option>
+              <option value="JP">Japan</option>
+              <option value="KR">South Korea</option>
+              <option value="BR">Brazil</option>
+              <option value="MX">Mexico</option>
+              <option value="RU">Russia</option>
+              <option value="ZA">South Africa</option>
+              <option value="SE">Sweden</option>
+              <option value="NL">Netherlands</option>
+              <option value="CN">China</option>
+              <option value="SG">Singapore</option>
+              <option value="TH">Thailand</option>
+              <option value="PH">Philippines</option>
+              <option value="KZ">Kazakhstan</option>
+              <option value="MY">Malaysia</option>
+              <option value="ID">Indonesia</option>
+              <option value="AE">United Arab Emirates</option>
+              <option value="SA">Saudi Arabia</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn round secondary" id="endBtn">End</button>
+      </div>
+
+      <div class="grid chat-grid" style="padding:18px">
+        <div class="panel" id="selfVideo">
+          <span class="placeholder">Your Video</span>
+        </div>
+        <div class="panel" id="remoteVideo">
+          <span class="placeholder">Stranger Video</span>
+        </div>
+
+        <div class="chatbox" id="chatBox" aria-label="Text chat messages"></div>
+
+        <div class="controls" style="padding-bottom:18px">
+          <input type="text" id="messageInput" placeholder="Type a message..." style="flex:1;min-width:240px" />
+          <button class="btn" id="sendBtn">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            Send
+          </button>
+          <button class="btn secondary" id="nextBtn">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            Next
+          </button>
+          <button class="btn secondary" id="muteBtn">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4z"></path><line x1="23" y1="9" x2="17" y2="15"></line></svg>
+            Mute
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    // Client logic integrated with server (matchmaking + WebRTC signaling + chat relay)
+    const landing = document.getElementById('landing');
+    const chat = document.getElementById('chat');
+    const startBtn = document.getElementById('startBtn');
+    const endBtn = document.getElementById('endBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const sendBtn = document.getElementById('sendBtn');
+    const messageInput = document.getElementById('messageInput');
+    const chatBox = document.getElementById('chatBox');
+    const countrySel = document.getElementById('country');
+    const muteBtn = document.getElementById('muteBtn');
+    const selfVideoPanel = document.getElementById('selfVideo');
+    const remoteVideoPanel = document.getElementById('remoteVideo');
+
+    const socket = io({ transports: ['websocket'] });
+
+    function codeToFlagEmoji(cc) {
+      if (!cc || cc==='any') return '🌐';
+      cc = cc.toUpperCase();
+      return cc.replace(/./g, ch => String.fromCodePoint(127397 + ch.charCodeAt(0)));
+    }
+
+    function appendMessage(cls, text) {
+      const p = document.createElement('p');
+      p.className = 'msg ' + cls;
+      p.textContent = text;
+      chatBox.appendChild(p);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    let pc = null;
+    let localStream = null;
+    let audioEnabled = true;
+
+    async function startLocalStream() {
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        // create video element inside selfVideoPanel
+        selfVideoPanel.innerHTML = '';
+        const v = document.createElement('video');
+        v.autoplay = true; v.muted = true; v.playsInline = true;
+        v.srcObject = localStream;
+        selfVideoPanel.appendChild(v);
+      } catch (e) {
+        console.warn('Media error', e);
+        appendMessage('them', 'Camera/Mic permission denied or not available. You can still chat by text.');
+      }
+    }
+
+    function createPeer() {
+      pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+      pc.onicecandidate = (e) => { if (e.candidate) socket.emit('signal', { type: 'ice', candidate: e.candidate }); };
+      pc.ontrack = (e) => {
+        remoteVideoPanel.innerHTML = '';
+        const v = document.createElement('video');
+        v.autoplay = true; v.playsInline = true;
+        v.srcObject = e.streams[0];
+        remoteVideoPanel.appendChild(v);
+      };
+      if (localStream) {
+        for (const t of localStream.getTracks()) pc.addTrack(t, localStream);
+      }
+    }
+
+    socket.on('connect', () => appendMessage('them', 'Connected to server'));
+
+    socket.on('status', (s) => {
+      if (s.state === 'waiting') appendMessage('them', 'Waiting for a stranger...');
+      if (s.state === 'paired') {
+        appendMessage('them', 'Stranger connected — establishing media...');
+        // start creating offer/answer negotiation
+        (async () => {
+          if (!pc) createPeer();
+          try {
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            socket.emit('signal', { type: 'offer', sdp: pc.localDescription });
+          } catch (e) { console.warn('Offer error', e); }
+        })();
+      }
+      if (s.state === 'partner-left') appendMessage('them', 'Partner left. Click Next to find another.');
+    });
+
+    socket.on('partnerInfo', (data) => {
+      if (data && data.country) appendMessage('them', 'Stranger from: ' + (data.flag || codeToFlagEmoji(data.country)) + ' ' + (data.name || data.country));
+    });
+
+    socket.on('signal', async (payload) => {
+      try {
+        if (payload.type === 'offer') {
+          if (!pc) createPeer();
+          await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          socket.emit('signal', { type: 'answer', sdp: pc.localDescription });
+        } else if (payload.type === 'answer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+        } else if (payload.type === 'ice') {
+          try { await pc.addIceCandidate(payload.candidate); } catch (e) { console.warn('ICE add failed', e); }
+        }
+      } catch (err) {
+        console.warn('Signal handling error', err);
+      }
+    });
+
+    socket.on('chatMessage', (msg) => appendMessage('them', 'Stranger: ' + msg));
+
+    // Controls
+    startBtn.addEventListener('click', async () => {
+      landing.classList.add('hidden');
+      chat.classList.remove('hidden');
+      appendMessage('them', 'Matching you with a stranger...');
+      await startLocalStream();
+      // send join info
+      const opt = countrySel.options[countrySel.selectedIndex];
+      const code = opt.value;
+      const name = opt.textContent;
+      socket.emit('join', { country: code, name: name, flag: codeToFlagEmoji(code) });
+      socket.emit('start', { country: code });
+    });
+
+    nextBtn.addEventListener('click', () => {
+      appendMessage('them', 'Searching for the next match…');
+      socket.emit('next');
+      if (pc) { try { pc.close(); } catch(e){} pc = null; }
+      remoteVideoPanel.innerHTML = '<span class=\"placeholder\">Stranger Video</span>';
+    });
+
+    endBtn.addEventListener('click', () => {
+      if (pc) { try { pc.close(); } catch(e){} pc = null; }
+      if (localStream) {
+        for (const t of localStream.getTracks()) t.stop();
+        localStream = null;
+      }
+      chat.classList.add('hidden');
+      landing.classList.remove('hidden');
+      socket.emit('disconnect');
+      // reset panels
+      selfVideoPanel.innerHTML = '<span class=\"placeholder\">Your Video</span>';
+      remoteVideoPanel.innerHTML = '<span class=\"placeholder\">Stranger Video</span>';
+      chatBox.innerHTML = '';
+    });
+
+    sendBtn.addEventListener('click', () => {
+      const v = messageInput.value.trim();
+      if (!v) return;
+      appendMessage('me', 'You: ' + v);
+      socket.emit('chatMessage', v);
+      messageInput.value = '';
+    });
+
+    messageInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendBtn.click(); });
+
+    muteBtn.addEventListener('click', () => {
+      if (!localStream) return;
+      audioEnabled = !audioEnabled;
+      for (const t of localStream.getAudioTracks()) t.enabled = audioEnabled;
+      muteBtn.textContent = audioEnabled ? 'Mute' : 'Unmute';
+    });
+  </script>
+</body>
+</html>
